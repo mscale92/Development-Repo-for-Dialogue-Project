@@ -7,6 +7,7 @@ var app = express();
 // This middleware will parse the POST requests coming from an HTML form, and put the result in req.body.  Read the docs for more info!
 app.use(bodyParser.urlencoded({extended: true}));
 
+// Middleware that checks the jwt for all pages
 app.use(
   jwt({
     secret: new Buffer(process.env.AUTH0_CLIENT_SECRET, 'base64'),
