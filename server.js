@@ -55,78 +55,78 @@ app.post('/api/signup', function(req, res){
 	doubles are needed for internal strings, like "Mushroom Inc"
 	*/
   auth0.getUsers({q: `email: "${email}"`})
-  .then(function (user) {
-    // console.log(user);
-    if(user.length > 0){
-      console.log("user already exists");
-      res.status(400).send("user already exists");
-    }
-    //Else, the user does not exist
-    //Clear to go ahead and create a new customer on Stripe!
-		else{
-      return;
-    }
-  
-  })
-	.then(function(){
-		// Return the customer object from the stripe.customers.create promise function
-		return stripe.customers.create({
-		  description: companyName,
-		  email: email,
-		});
-	})
-	.then(customer => {
-		/*
-		Next using the customer object, grab the id value
-		and assign it to a plan to create a new subscription.
-		On signup each customer is on plan zero, a free plan, so as to not require a credit card, this will be updated later.
-		*/
-		return stripe.subscriptions.create({
-			customer: customer.id,
-			plan: "zero"
-		});
-	})
-	.then(subscription => {
-		/*
-		Next using the email, password, firstName, lastName, companyName and customerId
-		obtained from the subscription object we signup a new user on Auth0
-		*/
-		var customerId = subscription.customer;
-		return auth0.createUser({
-			connection: auth0Connection,
-			email: email,
-			password: password,
-			user_metadata: {
-				firstName: firstName,
-				lastName: lastName,
-			},
-			app_metadata: {
-				companyName: companyName,
-				customerId: customerId,
-				roles: ["admin", "employee"],
-			},
-		});
-	})
-	.then(user => {
-		//Now we login the user to auth0 with their email, password, and define the scope of their JWT token
-		return authentication0.oauth.signIn({
-			grant_type: "password",
-			connection: auth0Connection,
-			username: email,
-			password: password,
-			scope: "openid app_metadata email",
-		});
-	})
-	.then(jwtObject => {
+    .then(function (user) {
+      // console.log(user);
+      if(user.length > 0){
+        console.log("user already exists");
+        res.status(400).send("user already exists");
+      }
+      //Else, the user does not exist
+      //Clear to go ahead and create a new customer on Stripe!
+  		else{
+        return;
+      }
     
-   var decoded = jwt.decode(jwtObject.id_token);
+    })
+  	.then(function(){
+  		// Return the customer object from the stripe.customers.create promise function
+  		return stripe.customers.create({
+  		  description: companyName,
+  		  email: email,
+  		});
+  	})
+  	.then(customer => {
+  		/*
+  		Next using the customer object, grab the id value
+  		and assign it to a plan to create a new subscription.
+  		On signup each customer is on plan zero, a free plan, so as to not require a credit card, this will be updated later.
+  		*/
+  		return stripe.subscriptions.create({
+  			customer: customer.id,
+  			plan: "zero"
+  		});
+  	})
+  	.then(subscription => {
+  		/*
+  		Next using the email, password, firstName, lastName, companyName and customerId
+  		obtained from the subscription object we signup a new user on Auth0
+  		*/
+  		var customerId = subscription.customer;
+  		return auth0.createUser({
+  			connection: auth0Connection,
+  			email: email,
+  			password: password,
+  			user_metadata: {
+  				firstName: firstName,
+  				lastName: lastName,
+  			},
+  			app_metadata: {
+  				companyName: companyName,
+  				customerId: customerId,
+  				roles: ["admin", "employee"],
+  			},
+  		});
+  	})
+  	.then(user => {
+  		//Now we login the user to auth0 with their email, password, and define the scope of their JWT token
+  		return authentication0.oauth.signIn({
+  			grant_type: "password",
+  			connection: auth0Connection,
+  			username: email,
+  			password: password,
+  			scope: "openid app_metadata email",
+  		});
+  	})
+  	.then(jwtObject => {
+      
+     var decoded = jwt.decode(jwtObject.id_token);
 
-		res.send(JSON.stringify(decoded));
-	})
-  .catch(function (error) {
-    // Handle error.
-    console.log("Error", error);
-  });
+  		res.send(JSON.stringify(decoded));
+  	})
+    .catch(function (error) {
+      // Handle error.
+      console.log("Error", error);
+    });
 
   /*
   This endpoint will be called when we want to signup a new company to our system. We will receive this data (req.body):
@@ -292,7 +292,10 @@ app.patch('/api/users/:userId', function(req, res) {
 //Mary
 //users.js
 app.delete('/api/users/:userId', function(req, res) {
-  res.send('TODO');
+  users.deleteUser(customerId, req.params.userId)
+  .then(function(result){
+    res.json(result);
+  })
   /*
   This endpoint is "protected" by express-jwt. This middleware will add a req.user object with all the info from the user. It will lok a bit like this:
 

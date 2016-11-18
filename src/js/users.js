@@ -1,5 +1,5 @@
 var ManagementClient = require('auth0').ManagementClient;
-
+var stripe = require('stripe')(process.env.STRIPE_SK_TEST);
 var auth0 = new ManagementClient({
   token: process.env.AUTH0_TOKEN,
   domain: process.env.AUTH0_DOMAIN,
@@ -19,14 +19,17 @@ module.exports = {
 
 	},
 	deleteUser: function(customerId, userId){
-		return auth0.delete({id: userId})
+		return auth0.deleteUser({id: userId})
 		.then(function(){
 		return stripe.customers.retrieve(customerId)
 		})
 		.then(function(customer) {
-        var subscriptionId = customer.subscriptions.data[0].id;
+        	var subscriptionId = customer.subscriptions.data[0].id;
+        	return stripe.subscriptions.retrieve(subscriptionId)	
         })
-        .then(function(quantity){
+        .then(function(subscription){
+        	var quantity = subscription.quantity;
+        	var subscriptionId = subscription.id;
 	        return stripe.subscriptions.update(subscriptionId, {
 			  quantity: quantity-1
 			})
