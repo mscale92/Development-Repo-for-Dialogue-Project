@@ -5,13 +5,8 @@ var auth0 = new ManagementClient({
   domain: process.env.AUTH0_DOMAIN,
 });
 
+var auth0Connection = "Username-Password-Authentication";
 
-
-/*
-1. Extract the customerId from the req.user
-  2. Make a call to Auth0 management API to list all users where app_metadata:company = that customerID
-  3. Send back a JSON response with an array of users [{"id": "xxx", firstName: "xx", lastName: "xx", emailAddress: "xx", and any other field you deem necessary}]
-  */
 
 module.exports = {
 	getCompany: function (customerId){
@@ -33,6 +28,36 @@ module.exports = {
 	        return stripe.subscriptions.update(subscriptionId, {
 			  quantity: quantity-1
 			})
-      })
+      	})
+	},
+	createUser: function(customerId, email, password, firstName, lastName){
+		return auth0.createUser({
+  			connection: auth0Connection,
+  			email: email,
+  			password: password,
+  			user_metadata: {
+  				firstName: firstName,
+  				lastName: lastName,
+  			},
+  			app_metadata: {
+  				customerId: customerId,
+  				roles: ["employee"],
+  			},
+  		})
+  		.then(function(result){
+  			return stripe.customers.retrieve(customerId);
+  		})
+  		.then(function(customer) {
+        	var subscriptionId = customer.subscriptions.data[0].id;
+        	return stripe.subscriptions.retrieve(subscriptionId)	
+        })
+        .then(function(subscription){
+        	var quantity = subscription.quantity;
+        	var subscriptionId = subscription.id;
+	        return stripe.subscriptions.update(subscriptionId, {
+			  quantity: quantity+1
+			})
+      	})
+
 	}
 }

@@ -171,8 +171,8 @@ app.post('/api/login', function(req, res){
 
 // !!!!!!!!!!!!!!!!!!
 //DELETE vars LATER!
-var customerId = "cus_9aAha8eMcEMNg8";
-var userId = "auth0|582e4ce03a708ff7345f9f4e";
+var customerId = "cus_9aAiFfOg02vXHr";
+var userId = "auth0|582e4d0c761e61454c1317f8";
 //!!!!!!!!!!!!!!!!!!!
 
 //Florent
@@ -265,7 +265,18 @@ app.get('/api/users', function(req, res){
 //Mary
 //users.js
 app.post('/api/users', function(req, res) {
-  res.send('TODO');
+
+  var email = "sable@albian.com";
+  var firstName = "Sable";
+  var lastName = "Able";
+
+  return users.createUser(customerId, email, "123456", firstName, lastName)
+  .then(function(results){
+    res.json(results);
+  })
+  .catch(function(err){
+    res.status(401).send(err)
+  })
   /*
   This endpoint is "protected" by express-jwt. This middleware will add a req.user object with all the info from the user. It will lok a bit like this:
 
