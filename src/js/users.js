@@ -9,7 +9,8 @@ var auth0Connection = "Username-Password-Authentication";
 
 
 module.exports = {
-	getCompany: function (customerId){
+	get: function (customerId){
+    console.log(customerId)
 		return auth0.getUsers({q: `app_metadata.customerId: "${customerId}"`})
 
 	},
@@ -20,7 +21,7 @@ module.exports = {
 		})
 		.then(function(customer) {
         	var subscriptionId = customer.subscriptions.data[0].id;
-        	return stripe.subscriptions.retrieve(subscriptionId)	
+        	return stripe.subscriptions.retrieve(subscriptionId)
         })
         .then(function(subscription){
         	var quantity = subscription.quantity;
@@ -49,7 +50,7 @@ module.exports = {
   		})
   		.then(function(customer) {
         	var subscriptionId = customer.subscriptions.data[0].id;
-        	return stripe.subscriptions.retrieve(subscriptionId)	
+        	return stripe.subscriptions.retrieve(subscriptionId)
         })
         .then(function(subscription){
         	var quantity = subscription.quantity;

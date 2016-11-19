@@ -11,37 +11,33 @@ var auth0 = new ManagementClient({
 
 
 module.exports = {
-	update: function patchCompany(customerId, userId, companyName){
 
-		return stripe.customers.update(customerId, 
+  get: function(customerId){
+    return stripe.customers.retrieve(customerId)
+    .then(customer => {
+        return {
+          customerId: customer.id,
+          companyName: customer.description,
+          subscription: customer.subscriptions,
+         };
+    });
+  },
+
+	update: function(customerId, userId, companyName){
+
+		return stripe.customers.update(customerId,
 			{description: companyName}
 		)
 		.then(function(result){
 			console.log("stripe ok!");
-		
-
 			return auth0.updateUser({id: userId}, {app_metadata: {companyName: companyName}});
 		})
 		.then(function(result){
 			console.log("auth0 ok!");
-			
 			return result;
 		});
 
 	},
-
-	get: function getCompany(customerId){
-		return stripe.customers.retrieve(customerId)
-		.then(customer => {
-		    return {
-		      customerId: customer.id,
-		      companyName: customer.description,
-		      subscription: customer.subscriptions,
-		     };
-	 	});
-	  
-	}
-
 };
 
  // 1. Extract the customerId from the req.user

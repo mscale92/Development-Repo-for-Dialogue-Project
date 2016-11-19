@@ -1,26 +1,29 @@
 var stripe = require('stripe')(process.env.STRIPE_SK_TEST);
 
 module.exports = {
-  getCreditCard: function(customerId){
+
+  create: function(customerId, newCreditCard){
+    return stripe.tokens.create({card: newCreditCard})
+      .then(token => {
+        return stripe.customers.createSource(customerId, {source: token.id});
+      })
+      .then(createdCreditCard => {
+        return createdCreditCard;
+      });
+  },
+  get: function(customerId){
     return stripe.customers.retrieve(customerId)
       .then(customer =>{
-        return customer.sources.data[0]
+        return customer.sources.data[0];
       });
   },
-  updateCreditCard: function(customerId, updatedCreditCardData){
-    getCreditCard(customerId)
-      .then(creditCardData => {
-        var creditCardId =
-        return stripe.customers.updateCard(customerId, creditCardId, {updatedCreditCardData})
+  update: function(customerId, updatedCreditCardData){
+    return stripe.tokens.create({card: updatedCreditCardData})
+      .then(token => {
+        return stripe.customers.update(customerId, {source: token.id});
       })
-      .then(newCreditCardData => {
+      .then(newCreditCardData => {       
         return newCreditCardData;
       })
-  },
-  createCreditCard: function(customerId, newCreditCard){
-    stripe.tokens.create(newCreditCard, customerId)
-      .then(newCreditCardData => {
-        return newCreditCardData;
-      });
   },
 }
