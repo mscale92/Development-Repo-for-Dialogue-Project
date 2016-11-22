@@ -8,6 +8,7 @@ import Dialog from 'material-ui/Dialog';
 import CircularProgress from 'material-ui/CircularProgress';
 import Toggle from 'material-ui/Toggle';
 import FontIcon from 'material-ui/FontIcon';
+import EditUserForm from './EditUserForm';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -22,7 +23,7 @@ const style = {
 	},
 	iconStyle: {
 		color: '#BDBDBD',
- 		margin: '0.6em 4em'
+ 		margin: '0.3em'
 	}
 }
 
@@ -33,10 +34,13 @@ var Users = React.createClass({
 		}
 	},
 	handleClose: function(){
+		//TODO userToEditId
 		this.setState({
 			userToDelete: false,
-			userIdtoDelete: false
-		})
+			userToDeleteId: false,
+			userToEdit: false,
+
+		});
 	},
 	_handleDelete: function(userToDelete){
 
@@ -62,20 +66,22 @@ var Users = React.createClass({
 			this.setState({
 				users: response,
 				userToDelete: false,
-				userIdtoDelete: false
+				userToDeleteId: false
 			});
 		});
 	},
 	renderData: function(user) {
 		return (
 				<TableRow key={user.user_id}>
-					<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "" : "face"}</FontIcon>
+					<TableHeaderColumn>
+						<FlatButton onClick={() => this.setState({userToEdit: true})} icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}></FlatButton>
+					</TableHeaderColumn>
 					<TableRowColumn>{user.user_metadata.firstName}</TableRowColumn>
 					<TableRowColumn>{user.user_metadata.lastName}</TableRowColumn>
 					<TableRowColumn>{user.email}</TableRowColumn>
 					<TableRowColumn>
 						<RaisedButton
-							onTouchTap={()=>this.setState({userToDelete: user.user_metadata.firstName, userIdtoDelete: user.user_id})}
+							onTouchTap={()=>this.setState({userToDelete: user.user_metadata.firstName, userToDeleteId: user.user_id})}
 							label="Delete"
 							primary={true}
 							disabled={user.app_metadata.roles.indexOf('admin')<0 ? false : true}
@@ -119,7 +125,7 @@ var Users = React.createClass({
 		  <FlatButton
 		    label="Submit"
 		    primary={true}
-		    onClick={() => this._handleDelete(this.state.userIdtoDelete)}
+		    onClick={() => this._handleDelete(this.state.userToDeleteId)}
 		  />,
 		];
 	    return (
@@ -139,8 +145,8 @@ var Users = React.createClass({
 				    <TableBody displayRowCheckbox={false}>
 				    	{users.map(this.renderData)}
 				    </TableBody>
-		   		</Table>
-				<Dialog
+		   	</Table>
+						<Dialog
 			          actions={actionsButtons}
 			          modal={false}
 			          open={this.state.userToDelete ? true:false}
@@ -148,6 +154,14 @@ var Users = React.createClass({
 			        >
 			          Wait...Are you sure you want to delete {this.state.userToDelete}?
 		        </Dialog>
+						<Dialog
+						    autoScrollBodyContent={true}
+							modal={false}
+							open={this.state.userToEdit ? true:false}
+							onRequestClose={this.handleClose}
+						>
+							<EditUserForm/>
+						</Dialog>
 	      </div>
 	      );
 	  }

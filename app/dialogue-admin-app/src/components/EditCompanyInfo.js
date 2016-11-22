@@ -1,4 +1,5 @@
 import React from 'react';
+import {browserHistory} from 'react-router';
 
 import TextField from 'material-ui/TextField';
 import FlatButton from 'material-ui/FlatButton';
@@ -32,6 +33,9 @@ var EditCompanyInfo = React.createClass({
             throw new Error("Bad response from server");
 	        }
 	        return response.json();
+		})
+		.then(response=>{
+			browserHistory.push('/dashboard');
 		})
 	},
 	render: function() {
