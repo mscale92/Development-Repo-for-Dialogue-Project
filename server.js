@@ -317,8 +317,17 @@ app.post('/api/users', function(req, res) {
 });
 
 app.patch('/api/users/:userId', function(req, res) {
-  res.send('TODO');
-  // NOT FOR NOW, WE ARE NOT UPDATING USERS YET
+  userId = req.params.userId;
+  userData = req.body;
+
+  users.update(userId, userData)
+  .then( updatedUser =>{
+    res.json(updatedUser);
+  })
+  .catch(function (error) {
+    res.status(401).send(error);
+  });
+  
 });
 
 app.delete('/api/users/:userId', function(req, res) {

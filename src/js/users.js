@@ -16,6 +16,9 @@ module.exports = {
   getUser: function(userId){
     return auth0.getUsers({id: userId})
   },
+  update: function(userId, userData){
+    return auth0.updateUser({id: userId}, userData)
+  },
 	deleteUser: function(customerId, userId){
 		return auth0.deleteUser({id: userId})
 		.then(function(){

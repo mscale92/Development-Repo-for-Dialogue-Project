@@ -14,16 +14,33 @@ const editUserDialogStyle = {
 
 
 var EditUserForm = React.createClass({
+	propTypes: {
+		user: React.PropTypes.string
+	},
 	_editUser: function() {
+		var that = this;
+		// Give the users the option to enter only desired fields by testing for empty values
+
+		//Format the empty object for the server
 		var currentUserInfo = {
-			updatedFirstName: this.refs.updatedFirstName.getValue(),
-			updatedLastName: this.refs.updatedLastName.getValue(),
-			updatedEmail: this.refs.updatedEmail.getValue(),
+			user_metadata: {}
 		};
-		fetch('', {
+
+		// Set some variables from the form values for ternary simplicity later 
+		var firstName = this.refs.updatedFirstName.getValue()
+		var lastName = this.refs.updatedLastName.getValue()
+		var email = this.refs.updatedEmail.getValue()
+
+		//If the field is empty, just null. Otherwise, add it to the object
+		firstName.length !== 0 ? currentUserInfo.user_metadata.firstName = firstName : null;
+		lastName.length !== 0 ? currentUserInfo.user_metadata.lastName = lastName : null;
+		email.length !== 0 ? currentUserInfo.email = email : null;
+
+		//Send the fetch Patch request
+		fetch('http://localhost:1337/api/users/' + this.props.user, {
 		method: 'PATCH', 
 		body: JSON.stringify(currentUserInfo),
-		headers: {'content-type': 'application/json'}
+		headers: {'Authorization': 'Bearer ' + localStorage.token, 'content-type': 'application/json'}
 		})
 		.then(function(response) {
 	       	if (response.status >= 400) {
@@ -33,6 +50,8 @@ var EditUserForm = React.createClass({
 	    })
 		//result comes back as a json property
 	    .then(function(result) {
+	    	
+	    	browserHistory.push('/accounts');
 		});
 
 	},
@@ -62,6 +81,7 @@ var EditUserForm = React.createClass({
 					    /><br />
 				    </div>
 				    <FlatButton
+				    	onClick={this._editUser}
 				    	backgroundColor='#40C4FF'
 				    	label="Submit"
 				    	primary={true}

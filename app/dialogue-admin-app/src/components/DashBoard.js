@@ -35,7 +35,30 @@ var DashBoard = React.createClass({
 			that.setState({
 				currentPlan: currentPlan
 			});
-		});
+		})
+		.then(()=>{
+			return that._getCompanyName()
+		})
+		.then(company => {
+			that.setState({
+				companyName: company.companyName
+			})
+		})
+	},
+
+	_getCompanyName: function(){
+		return fetch('http://localhost:1337/api/company', {
+				method: 'GET',
+				headers: {'Authorization': 'Bearer ' + localStorage.token}
+			})
+			.then(function(response) {
+				if (response.status >= 400) {
+					throw new Error("Bad response from server");
+				}
+				else {
+					return response.json();
+				}
+			});
 	},
 
 	//Fetch get request to get the company's current plan from Stripe
@@ -55,7 +78,7 @@ var DashBoard = React.createClass({
 	},
 
 	render: function() {
-		if(!this.state.currentPlan){
+		if(!this.state.currentPlan || !this.state.companyName){
 			return (
 				<div style={style}>
 					<CircularProgress/>
@@ -64,7 +87,7 @@ var DashBoard = React.createClass({
 		}
 		return (
 			<div>
-			<h2>Dashboard</h2>
+			<h2>{this.state.companyName} Dashboard</h2>
 					<Card>
 						<CardHeader title="Overview"/>
 						<CardText>{"Number of employees: " + this.state.currentPlan.subscriptionQuantity}</CardText>

@@ -9,6 +9,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 import Toggle from 'material-ui/Toggle';
 import FontIcon from 'material-ui/FontIcon';
 import EditUserForm from './EditUserForm';
+import TextField from 'material-ui/TextField';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -27,6 +28,10 @@ const style = {
 	}
 }
 
+const editUserDialogStyle = {
+	textAlign: 'center',
+}
+
 var Users = React.createClass({
 	getInitialState: function(){
 		return{
@@ -39,7 +44,7 @@ var Users = React.createClass({
 			userToDelete: false,
 			userToDeleteId: false,
 			userToEdit: false,
-
+			userToEditId: false,
 		});
 	},
 	_handleDelete: function(userToDelete){
@@ -70,11 +75,51 @@ var Users = React.createClass({
 			});
 		});
 	},
+	_editUser: function(userToEditId) {
+		var that = this;
+		// Give the users the option to enter only desired fields by testing for empty values
+
+		//Format the empty object for the server
+		var currentUserInfo = {
+			user_metadata: {}
+		};
+
+		// Set some variables from the form values for ternary simplicity later 
+		var firstName = this.refs.updatedFirstName.getValue()
+		var lastName = this.refs.updatedLastName.getValue()
+		var email = this.refs.updatedEmail.getValue()
+
+		//If the field is empty, just null. Otherwise, add it to the object
+		firstName.length !== 0 ? currentUserInfo.user_metadata.firstName = firstName : null;
+		lastName.length !== 0 ? currentUserInfo.user_metadata.lastName = lastName : null;
+		email.length !== 0 ? currentUserInfo.email = email : null;
+
+		//Send the fetch Patch request
+		fetch('http://localhost:1337/api/users/' + userToEditId, {
+		method: 'PATCH', 
+		body: JSON.stringify(currentUserInfo),
+		headers: {'Authorization': 'Bearer ' + localStorage.token, 'content-type': 'application/json'}
+		})
+		.then(function(response) {
+	       	if (response.status >= 400) {
+            	throw new Error("Bad response from server");
+	        	}
+	        return response.json();
+	    })
+		//result comes back as a json property
+	    .then(function(result) {
+	    	that.setState({
+	    		userToEdit: false,
+	    	})
+	    	browserHistory.push('/accounts');
+		});
+
+	},
 	renderData: function(user) {
 		return (
 				<TableRow key={user.user_id}>
 					<TableHeaderColumn>
-						<FlatButton onClick={() => this.setState({userToEdit: true})} icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}></FlatButton>
+						<FlatButton onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})} icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}></FlatButton>
 					</TableHeaderColumn>
 					<TableRowColumn>{user.user_metadata.firstName}</TableRowColumn>
 					<TableRowColumn>{user.user_metadata.lastName}</TableRowColumn>
@@ -146,22 +191,54 @@ var Users = React.createClass({
 				    	{users.map(this.renderData)}
 				    </TableBody>
 		   	</Table>
-						<Dialog
-			          actions={actionsButtons}
-			          modal={false}
-			          open={this.state.userToDelete ? true:false}
-			          onRequestClose={this.handleClose}
+				<Dialog
+		          	actions={actionsButtons}
+		          	modal={false}
+		          	open={this.state.userToDelete ? true:false}
+		          	onRequestClose={this.handleClose}
 			        >
 			          Wait...Are you sure you want to delete {this.state.userToDelete}?
 		        </Dialog>
-						<Dialog
-						    autoScrollBodyContent={true}
-							modal={false}
-							open={this.state.userToEdit ? true:false}
-							onRequestClose={this.handleClose}
-						>
-							<EditUserForm/>
-						</Dialog>
+				<Dialog
+				    autoScrollBodyContent={true}
+					modal={false}
+					open={this.state.userToEdit ? true : false}
+					onRequestClose={this.handleClose}
+					>
+					<div style={editUserDialogStyle}>
+					<div>
+						<h3>Edit employee information</h3>
+						<div>
+					    <TextField
+					      ref="updatedFirstName"
+					      hintText="Updated First Name"
+					      floatingLabelText="Updated First Name"
+					      type="text"
+					    /><br />
+					    <TextField
+					      ref="updatedLastName"
+					      hintText="Updated Last Name"
+					      floatingLabelText="Updated Last Name"
+					      type="text"
+					    /><br />
+					    <TextField
+					      ref="updatedEmail"
+					      hintText="Updated Email Address"
+					      floatingLabelText="Updated Email Address"
+					      type="text"
+					    /><br />
+				    </div>
+				    <FlatButton
+				    	onClick={() => this._editUser(this.state.userToEditId)}
+				    	backgroundColor='#40C4FF'
+				    	label="Submit"
+				    	primary={true}
+				    	style={{color: '#E1F5FE', margin: '12px'}}
+				    	
+				    />
+					</div>
+				</div>
+				</Dialog>
 	      </div>
 	      );
 	  }
