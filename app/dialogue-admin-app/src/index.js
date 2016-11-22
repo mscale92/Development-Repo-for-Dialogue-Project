@@ -15,23 +15,23 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 
 //all the pages
-import WelcomePage from './WelcomePage';
-import LandingPage from './LandingPage';
-import DashBoard from './DashBoard';
-import CompanyPage from './CompanyPage';
-import AccountsPage from './AccountsPage';
-import PlansPage from './PlansPage';
-import BillingPage from './BillingPage';
+import WelcomePage from './components/WelcomePage';
+import LandingPage from './components/LandingPage';
+import DashBoard from './components/DashBoard';
+import CompanyPage from './components/CompanyPage';
+import AccountsPage from './components/AccountsPage';
+import PlansPage from './components/PlansPage';
+import BillingPage from './components/BillingPage';
 
 
 //all the forms 
-import EditCompanyInfo from './EditCompanyInfo';
-import EditPaymentCardInfo from './EditPaymentCardInfo';
-import CreateNewAccountForm from './CreateNewAccountForm';
-import SignUpForm from './SignUpForm';
-import LogInForm from './LogInForm';
+import EditCompanyInfo from './components/EditCompanyInfo';
+import EditPaymentCardInfo from './components/EditPaymentCardInfo';
+import CreateNewAccountForm from './components/CreateNewAccountForm';
+import SignUpForm from './components/SignUpForm';
+import LogInForm from './components/LogInForm';
 
-import './index.css';
+import './css/index.css';
 
 //Routes
 var routes = (

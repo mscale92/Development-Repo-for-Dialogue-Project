@@ -10,10 +10,12 @@ var auth0Connection = "Username-Password-Authentication";
 
 module.exports = {
 	get: function (customerId){
-    console.log(customerId)
 		return auth0.getUsers({q: `app_metadata.customerId: "${customerId}"`})
 
 	},
+  getUser: function(userId){
+    return auth0.getUsers({id: userId})
+  },
 	deleteUser: function(customerId, userId){
 		return auth0.deleteUser({id: userId})
 		.then(function(){
@@ -27,9 +29,9 @@ module.exports = {
         	var quantity = subscription.quantity;
         	var subscriptionId = subscription.id;
 	        return stripe.subscriptions.update(subscriptionId, {
-			  quantity: quantity-1
-			})
-      	})
+			         quantity: (quantity-1)
+			    });
+      	});
 	},
 	createUser: function(customerId, email, password, firstName, lastName){
 		return auth0.createUser({

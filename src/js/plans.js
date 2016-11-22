@@ -22,10 +22,14 @@ module.exports = {
     return stripe.customers.retrieve(customerId)
       .then(customer => {
         var subscriptionId = customer.subscriptions.data[0].id;
-        return stripe.subscriptions.update(subscriptionId, {plan: newPlanId});
+        var subscriptionQuantity = customer.subscriptions.data[0].quantity;
+        return stripe.subscriptions.update(subscriptionId, {
+          plan: newPlanId,
+          quantity: subscriptionQuantity
+        });
       })
       .then(subscription => {
         return subscription;
-      })
+      });
   }
 }

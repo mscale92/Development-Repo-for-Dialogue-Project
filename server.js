@@ -16,11 +16,10 @@ var creditCard = require('./src/js/creditCard.js');
 var plans = require('./src/js/plans.js');
 var users = require('./src/js/users.js');
 
-
-
 // This middleware will parse the POST requests coming from an HTML form, and put the result in req.body.  Read the docs for more info!
 app.use(bodyParser.json());
 app.use(cors());
+
 
 //This middleware will check for authentication on every page except the homepage
 app.use(
@@ -64,7 +63,8 @@ app.post('/api/signup', function(req, res){
   auth0.getUsers({q: `email: "${email}"`})
   .then(function (user) {
     if(user.length > 0){
-      throw new Error("User already exists.");
+      // throw new Error("User already exists.");
+      res.status(401).send("User already exists.")
     }
     //Else, the user does not exist
     //Clear to go ahead and create a new customer on Stripe!
@@ -141,7 +141,8 @@ app.post('/api/signup', function(req, res){
 });
 
 app.post('/api/login', function(req, res){
-
+  // token()
+  // console.log(auth0.deviceCredentials.resource.options.headers)
   /*
   1. Make a login call (scope=openid app_metadata) to Auth0 with emailAddress and password
   2. If login works, send a JSON with {token: "TOKEN FROM Auth0"}
@@ -150,13 +151,25 @@ app.post('/api/login', function(req, res){
   var email = req.body.email;
   var password = req.body.password;
 
-  //TODO CHECK ADMIN PROVILEDGES
-  return authentication0.oauth.signIn({
-    grant_type: "password",
-    connection: auth0Connection,
-    username: email,
-    password: password,
-    scope: "openid app_metadata userId",
+  //CHECK ADMIN PROVILEDGES
+
+  auth0.getUsers({q: `email: "${email}"`})
+  .then(function(user){
+
+    if(user[0].app_metadata.roles.indexOf("admin") < 0){
+      // eventually send something to the app that tells the user that it's admins only
+      //not just a console error
+      res.status(401).send("Admins only");
+    }
+    else{
+      return authentication0.oauth.signIn({
+        grant_type: "password",
+        connection: auth0Connection,
+        username: email,
+        password: password,
+        scope: "openid app_metadata userId",
+      })
+    }
   })
   .then(jwtObject => {
     res.json(jwtObject.id_token);
@@ -218,6 +231,7 @@ app.patch('/api/company', function(req, res) {
   var customerId = req.user.app_metadata.customerId;
   var userId = req.user.sub; //corresponds to the user id
   var updatedCompanyName = req.body.updatedCompanyName;
+  console.log(req.user);
   company.update(customerId, userId, updatedCompanyName)
   .then((updatedCompanyInfo)=>{
     res.json(updatedCompanyInfo);
@@ -251,6 +265,18 @@ app.get('/api/users', function(req, res){
     res.json(users);
   })
   .catch(function (error) {
+    res.status(401).send(error);
+  });
+});
+
+app.get('/api/users/:userId', function(req, res){
+
+  users.getUser(req.params.userId)
+  .then(user => {
+    
+    res.json(user);
+  })
+  .catch(error => {
     res.status(401).send(error);
   });
 });
@@ -298,7 +324,6 @@ app.patch('/api/users/:userId', function(req, res) {
 app.delete('/api/users/:userId', function(req, res) {
 
   var customerId = req.user.app_metadata.customerId;
-
   users.deleteUser(customerId, req.params.userId)
   .then( updatedSub =>{
     res.json(updatedSub);
@@ -399,6 +424,7 @@ app.put('/api/currentplan', function(req, res) {
 
   plans.updateCurrent(customerId, planToUpdate)
     .then(updatedPlan => {
+      console.log(updatedPlan);
       res.json(updatedPlan);
     })
     .catch(error => {
@@ -432,7 +458,12 @@ app.get('/api/creditcard', function(req, res) {
   creditCard.get(customerId)
     .then(creditCard => {
       //Send current credit card
-      res.json(creditCard);
+      if(!creditCard){
+        res.json({doesNotExist: true});
+      }
+      else {
+        res.json(creditCard);
+      }
     })
     .catch(error => {
       res.status(401).send(error);
@@ -460,8 +491,8 @@ app.post('/api/creditcard', function(req, res) {
   3. Send back a JSON response with {card: "whatever information you have"}
   */
   var customerId = req.user.app_metadata.customerId;
-  var creditCardData = req.body.creditCardData;
-
+  var creditCardData = req.body;
+  console.log(creditCardData);
   creditCard.get(customerId)
     .then(creditCardIsThere => {
       //If no card, create card
