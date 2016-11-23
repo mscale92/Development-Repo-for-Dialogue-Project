@@ -114,8 +114,6 @@ var Users = React.createClass({
 		        return response.json();
 		    })
 			.then(response => {
-				console.log(response, "strawberry");
-
 				return this._refreshData()
 			});
 
@@ -143,11 +141,9 @@ var Users = React.createClass({
 				if (response3.status >= 400) {
 					throw new Error("Bad response from server");
 				}
-				return response1.json();
+				return response3.json();
 			})
 			.then(response4 =>{
-				console.log(response4, "orange")	
-
 				this.setState({
 					userToEdit: false,
 					userToEditId: false,
