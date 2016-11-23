@@ -427,7 +427,20 @@ app.get('/api/charges', function(req, res){
   /*
   This endpoint will retreive the charges, billing history, of a company from stripe
   */
-  res.send('TODO');
+
+  // Set req.user value to a variable for simplicity
+  var customerId = req.user.app_metadata.customerId;
+
+  // Use charges module with the getAll function to retreive all of the charges for the admin user from stripe
+    // This appears as billing history on the browser
+  charges.getAll(customerId)
+    .then(charges => {
+      // Send all current charges to the browser
+      res.json(charges);
+    })
+    .catch(error => {
+      res.status(500).json({status: 500, message: "ERROR", sub: error, });
+    });
 });
 // End of Get Charges
 
