@@ -90,7 +90,7 @@ var CompanyPage = React.createClass({
 
     return(
       <div style={{display: "flex", "alignItems": "center"}}>
-        <h3 style={{color: "white", margin: 0, "marginRight": "1em"}}>Welcome, {user.user_metadata ? user.user_metadata.firstName : ""}</h3>
+        <h3 style={{color: "white", margin: 0, "marginRight": "1em"}}>Welcome {user.user_metadata ? user.user_metadata.firstName : ""}</h3>
         <IconMenu iconButtonElement={<Avatar style={{cursor: 'pointer'}} src={avatar} />} >
           <MenuItem onClick={this._editCompany} primaryText="Edit Company"/>
           <MenuItem onClick={this._editPayment} primaryText="Edit Payment"/>
