@@ -262,6 +262,7 @@ app.get('/api/users', function(req, res){
 
   users.get(customerId)
   .then((users)=>{
+    console.log(users, "banana")
     res.json(users);
   })
   .catch(function (error) {
@@ -319,6 +320,7 @@ app.post('/api/users', function(req, res) {
 app.patch('/api/users/:userId', function(req, res) {
   userId = req.params.userId;
   userData = req.body;
+
 
   users.update(userId, userData)
   .then( updatedUser =>{

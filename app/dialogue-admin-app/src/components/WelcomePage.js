@@ -3,7 +3,7 @@ import {browserHistory} from 'react-router';
 import CompanyPage from './CompanyPage';
 var WelcomePage = React.createClass({
     componentDidMount: function() {
-        if (localStorage.token) {
+        if (localStorage.token && window.location.path === '/') {
             browserHistory.push('/dashboard')
         }
     },

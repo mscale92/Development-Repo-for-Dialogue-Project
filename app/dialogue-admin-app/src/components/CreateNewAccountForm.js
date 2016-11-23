@@ -18,6 +18,9 @@ const style = {
 }
 
 var CreateNewAccountForm = React.createClass({
+	getInitialState: function() {
+		return {};
+	},
 	_createNewUser: function() {
 		var data = {
 			firstName: this.refs.firstName.getValue(),
@@ -34,13 +37,26 @@ var CreateNewAccountForm = React.createClass({
 			}
 		})
 		.then(function(response) {
-	       	if (response.status >= 400) {
-            throw new Error("Bad response from server");
-	        }
 	        return response.json();
 		})
-		.then(function(result){
-			browserHistory.push('/accounts');
+		.then(result => {
+			if (result.statusCode !== 200 && result.statusCode) {
+				console.log('code', result.statusCode)
+				var err;
+				try {
+					err = JSON.parse(result.message);
+				}
+				catch(e) {
+					err  = {message: "Unknown error, please try again later"};
+				}
+
+				this.setState({
+					error: err.message
+				});
+			}
+			else {
+				browserHistory.push('/accounts');
+			}
 		})
 	},
 	render: function() {
@@ -65,6 +81,10 @@ var CreateNewAccountForm = React.createClass({
 				        floatingLabelText="Email Address"
 				        type="text"
 				    /><br />
+				    {
+				    	this.state.error ? <span style={{color: '#D32F2F'}} className="error">{this.state.error}</span> : null
+				    }
+				    <br />
 				    <FlatButton 
 				    	onClick={this._createNewUser}
 				    	backgroundColor='#40C4FF' 
@@ -72,7 +92,6 @@ var CreateNewAccountForm = React.createClass({
 				    	primary={true}
 				    	style={{color: '#E1F5FE', marginTop: '12px'}}
  					/>
- 					<h3>DEV All passwords are 123456 until customized emails are set up DEV</h3>
 				</div>
 		);
 	}

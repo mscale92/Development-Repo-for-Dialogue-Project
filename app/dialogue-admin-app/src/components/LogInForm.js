@@ -23,6 +23,9 @@ const buttonStyle = {
 }
 
 var LogInForm = React.createClass({
+	getInitialState: function () {
+		return {}
+	},
 	_loginUser: function() {
 		var data = {
 			email: this.refs.email.getValue(),
@@ -33,17 +36,24 @@ var LogInForm = React.createClass({
 			body: JSON.stringify(data),
 			headers: {'content-type': 'application/json'}
 		})
-		.then(function(response) {
-	       	if (response.status >= 400) {
-            throw new Error("Bad response from server");
-	        }
+		.then(response => {
 	        return response.json();
 		})
-		.then(function(result){
-
-			localStorage.token = result;
-
-			browserHistory.push('/dashboard');
+		.then(result => {
+			if (result.statusCode && result.statusCode !== 200) {
+				var err;
+				try {
+					err = JSON.parse(result.message);
+				}
+				catch(e) {
+					err  = {message: "Unknown error, please try again later"};
+				}
+				this.setState({error: err.error_description})
+			}
+			else {
+				localStorage.token = result;
+				browserHistory.push('/dashboard');
+			}
 		})
 	},
 	render: function() {
@@ -67,6 +77,11 @@ var LogInForm = React.createClass({
 							    floatingLabelText="Password"
 							    type="password"
 						    /><br />
+					    </div>
+					    <div>
+					    	{
+				    		this.state.error ? <span style={{color: '#D32F2F'}} className="error">{this.state.error}</span> : null
+				    		}
 					    </div>
 					    <div style={buttonStyle}>
 						    <FlatButton 

@@ -40,6 +40,7 @@ var DashBoard = React.createClass({
 			return that._getCompanyName()
 		})
 		.then(company => {
+			console.log(company.companyName)
 			that.setState({
 				companyName: company.companyName
 			})
@@ -94,14 +95,14 @@ var DashBoard = React.createClass({
             <CardText>{"Payment per employee: $CAD " + this.state.currentPlan.plan.amount/100}</CardText>
             <CardText>{"Total payment per month: $CAD " + (this.state.currentPlan.subscriptionQuantity * this.state.currentPlan.plan.amount)/100}</CardText>
 					{/*card action button should direct the user to the AccountsPage*/}
-						<CardActions><FlatButton label="View employee details" onClick={() => browserHistory.push('/accounts')} /></CardActions>
+						<CardActions><FlatButton backgroundColor='#ff4081' labelStyle={{color: '#FFFFFF'}} label="View employee details" onClick={() => browserHistory.push('/accounts')} /></CardActions>
 					</Card>
 					<Card>
 						<CardHeader title="Current Plan"/>
 					{/*the content for cardText below should be the plan chosen by the company and the number of its benefiting employees*/}
 						<CardText>{this.state.currentPlan.plan.metadata.description}</CardText>
 					{/*card action button should direct the user to the plansPage*/}
-						<CardActions><FlatButton label="View other plans" onClick={() => browserHistory.push('/plans')} /></CardActions>
+						<CardActions><FlatButton backgroundColor='#ff4081' labelStyle={{color: '#FFFFFF'}} label="View other plans" onClick={() => browserHistory.push('/plans')} /></CardActions>
 					</Card>
 			</div>
 		)

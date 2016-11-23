@@ -39,7 +39,6 @@ var Users = React.createClass({
 		}
 	},
 	handleClose: function(){
-		//TODO userToEditId
 		this.setState({
 			userToDelete: false,
 			userToDeleteId: false,
@@ -63,9 +62,9 @@ var Users = React.createClass({
 		})
 		.then(function(response) {
 			if (response.status >= 400) {
-						throw new Error("Bad response from server");
-					}
-					return response.json();
+				throw new Error("Bad response from server");
+			}
+			return response.json();
 		})
 		.then(response => {
 			this.setState({
@@ -88,38 +87,82 @@ var Users = React.createClass({
 		var firstName = this.refs.updatedFirstName.getValue()
 		var lastName = this.refs.updatedLastName.getValue()
 		var email = this.refs.updatedEmail.getValue()
+		var password = this.refs.updatedPass.getValue()
+
+		// If both first and last name are missing, delete the user_metadata
+			// not doing this overrides all user_metadata on auth0
+		firstName.length === 0 && lastName.length === 0 ? delete currentUserInfo.user_metadata : null;
+		
 
 		//If the field is empty, just null. Otherwise, add it to the object
 		firstName.length !== 0 ? currentUserInfo.user_metadata.firstName = firstName : null;
 		lastName.length !== 0 ? currentUserInfo.user_metadata.lastName = lastName : null;
 		email.length !== 0 ? currentUserInfo.email = email : null;
+		password.length !== 0 ? currentUserInfo.password = password : null;
 
 		//Send the fetch Patch request
 		fetch('http://localhost:1337/api/users/' + userToEditId, {
-		method: 'PATCH', 
-		body: JSON.stringify(currentUserInfo),
-		headers: {'Authorization': 'Bearer ' + localStorage.token, 'content-type': 'application/json'}
+			method: 'PATCH', 
+			body: JSON.stringify(currentUserInfo),
+			headers: {'Authorization': 'Bearer ' + localStorage.token, 'content-type': 'application/json'}
 		})
-		.then(function(response) {
-	       	if (response.status >= 400) {
-            	throw new Error("Bad response from server");
-	        	}
-	        return response.json();
-	    })
-		//result comes back as a json property
-	    .then(function(result) {
-	    	that.setState({
-	    		userToEdit: false,
-	    	})
-	    	browserHistory.push('/accounts');
-		});
+			.then(function(response) {
+				
+		       	if (response.status >= 400) {
+	            	throw new Error("Bad response from server");
+		        	}
+		        return response.json();
+		    })
+			.then(response => {
+				console.log(response, "strawberry");
+
+				return this._refreshData()
+			});
+
+	},
+	_refreshData: function(){
+		
+		fetch('http://localhost:1337/api/users', {
+			method: 'GET',
+			headers: {'Authorization': 'Bearer ' + localStorage.token}
+			})
+			.then(response1 => {
+				if (response1.status >= 400) {
+					throw new Error("Bad response from server");
+				}
+				return response1.json();
+			})
+			.then(response2 => {
+				return fetch('http://localhost:1337/api/users', {
+					method: 'GET',
+					headers: {'Authorization': 'Bearer ' + localStorage.token}
+				})
+			})
+			.then(response3 => {
+				if (response3.status >= 400) {
+					throw new Error("Bad response from server");
+				}
+				return response1.json();
+			})
+			.then(response4 =>{
+				console.log(response4, "orange")	
+
+				this.setState({
+					userToEdit: false,
+					userToEditId: false,
+					users: response4,
+				})
+			});
 
 	},
 	renderData: function(user) {
 		return (
 				<TableRow key={user.user_id}>
 					<TableHeaderColumn>
-						<FlatButton onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})} icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}></FlatButton>
+						<FlatButton 
+							onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})} 
+							icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}>
+						</FlatButton>
 					</TableHeaderColumn>
 					<TableRowColumn>{user.user_metadata.firstName}</TableRowColumn>
 					<TableRowColumn>{user.user_metadata.lastName}</TableRowColumn>
@@ -227,6 +270,12 @@ var Users = React.createClass({
 					      floatingLabelText="Updated Email Address"
 					      type="text"
 					    /><br />
+					    <TextField
+					      ref="updatedPass"
+					      hintText="Updated Password"
+					      floatingLabelText="Updated Password"
+					      type="password"
+					    /><br />
 				    </div>
 				    <FlatButton
 				    	onClick={() => this._editUser(this.state.userToEditId)}
@@ -234,7 +283,6 @@ var Users = React.createClass({
 				    	label="Submit"
 				    	primary={true}
 				    	style={{color: '#E1F5FE', margin: '12px'}}
-				    	
 				    />
 					</div>
 				</div>
