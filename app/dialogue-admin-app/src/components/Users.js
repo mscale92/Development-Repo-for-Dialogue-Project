@@ -121,7 +121,8 @@ var Users = React.createClass({
 
 	},
 	_refreshData: function(){
-		
+		// Due to a delay in auth0 when sending a PATCH, we must do two gets back to back 
+		//in order to retreive the updated user data
 		fetch('http://localhost:1337/api/users', {
 			method: 'GET',
 			headers: {'Authorization': 'Bearer ' + localStorage.token}
