@@ -2,6 +2,7 @@ import React from 'react';
 import FlatButton from 'material-ui/FlatButton';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
+import {browserHistory} from 'react-router';
 
 
 
@@ -17,6 +18,11 @@ const center = {
 }
 
 var LandingPage = React.createClass({
+	componentDidMount: function() {
+        if (localStorage.token && this.props.location.pathname === '/') {
+            browserHistory.push('/dashboard')
+        }
+    },
 	render: function() {
 		return (
 				<div style={center}>

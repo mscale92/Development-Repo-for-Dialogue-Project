@@ -51,7 +51,7 @@ var CompanyPage = React.createClass({
   _editPayment: function(){
     browserHistory.push('editcard');
   },
- 
+
   componentDidMount: function() {
     fetch('http://localhost:1337/api/users', {
       method: 'GET',
@@ -84,24 +84,24 @@ var CompanyPage = React.createClass({
         avatar = user.picture;
       }
       else{
-        avatar = user.user_metadata.picture;    
+        avatar = user.user_metadata.picture;
       }
     }
-  
+
     return(
       <div style={{display: "flex", "alignItems": "center"}}>
-        <h3 style={{color: "white", margin: 0, "marginRight": "1em"}}>Welcome {user.user_metadata ? user.user_metadata.firstName : ""}</h3>
+        <h3 style={{color: "white", margin: 0, "marginRight": "1em"}}>Welcome, {user.user_metadata ? user.user_metadata.firstName : ""}</h3>
         <IconMenu iconButtonElement={<Avatar style={{cursor: 'pointer'}} src={avatar} />} >
           <MenuItem onClick={this._editCompany} primaryText="Edit Company"/>
           <MenuItem onClick={this._editPayment} primaryText="Edit Payment"/>
           <MenuItem onClick={this._handleLogout} primaryText="Logout"/>
         </IconMenu>
       </div>
-      
+
       )
   },
   render: function() {
- 
+
     var user = this.state.user;
 
     var menu = (
@@ -140,8 +140,3 @@ var CompanyPage = React.createClass({
 })
 
 export default CompanyPage;
-
-
-
-
-

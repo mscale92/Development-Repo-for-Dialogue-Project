@@ -68,13 +68,23 @@ var EditPaymentCardInfo = React.createClass({
 		}
 	},
 	_updateCard: function() {
-		console.log('update')
+		if (this.state.creditCardNumberValue.length <= 14){
+			this.setState({creditCarNumberErrorText: 'Credit card number should be 15 or 16 digits long'})
+			return;
+		}
+		if (this.state.creditCardCVCValue.length <= 2) {
+			this.setState({cvcErrorText: 'Credit card CVC should be 3 or 4 digits long'})
+			return;
+		}
+		// var currentDate = new Date()
+		// var creditCardDate = new Date('20'+this.state.creditCardYearValue, this.state.creditCardMonthValue, 30)
 		var data = {
 			number: this.refs.number.getValue(),
 			exp_month: this.refs.exp_month.getValue(),
 			exp_year: this.refs.exp_year.getValue(),
 			cvc: this.refs.cvc.getValue(),
 		};
+		var that = this;
 		fetch('http://localhost:1337/api/creditcard', {
 			method: 'POST',
 			body: JSON.stringify(data),
@@ -84,15 +94,18 @@ var EditPaymentCardInfo = React.createClass({
 			}
 		})
 		.then(function(response) {
-	       	if (response.status >= 400) {
-            throw new Error("Bad response from server", response);
-	        }
-					else {
-						return response.json();
-					}
+				return response.json();
 		})
 		.then(function(result){
-			browserHistory.push('/billing');
+			if(result.message === "ERROR"){
+				that.setState({
+					formErrorMessage: "There was an error, please check that your card is still valid."
+				})
+				return;
+			}
+			else {
+				browserHistory.push('/billing');
+			}
 		});
 	},
 	render: function() {
@@ -133,18 +146,19 @@ var EditPaymentCardInfo = React.createClass({
 			        hintText="CVC"
 			        floatingLabelText="CVC"
 			        type="text"
-							maxLength="6"
+							maxLength="4"
 							errorText={this.state.cvcErrorText}
 							onChange={this.onChange.bind(this, 'cvc')}
 				    /><br />
 				    <FlatButton
 				    	onClick={this._updateCard}
-				    	backgroundColor='#40C4FF'
+				    	backgroundColor= {(emptyInputs || errorStates) ? '#E0E0E0':'#40C4FF'}
 				    	label="Submit"
 				    	primary={true}
-				    	style={{color: '#E1F5FE', marginTop: '12px'}}
+				    	style={{color: (emptyInputs || errorStates) ? '#BDBDBD':'#E1F5FE', marginTop: '12px'}}
 							disabled={emptyInputs || errorStates}
 				    />
+						<p style={{color:'red'}}>{this.state.formErrorMessage}</p>
 				</div>
 		);
 	}

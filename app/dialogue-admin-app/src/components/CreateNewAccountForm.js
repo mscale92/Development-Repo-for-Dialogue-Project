@@ -21,18 +21,72 @@ var CreateNewAccountForm = React.createClass({
 	getInitialState: function() {
 		return {};
 	},
+  onChange: function(id, event) {
+
+    if(id === 'first_name') {
+      this.setState({
+        firstNameFieldValue: event.target.value,
+      });
+      if(event.target.value === '') {
+        this.setState({
+          firstNameErrorText: 'Field cannot be empty'
+        });
+      }
+      else {
+        this.setState({
+          firstNameErrorText: ''
+        });
+      }
+    }
+    else if (id === 'last_name') {
+      this.setState({
+        lastNameFieldValue: event.target.value,
+      });
+      if(event.target.value === '') {
+        this.setState({
+          lastNameErrorText: 'Field cannot be empty'
+        });
+      }
+      else {
+        this.setState({
+          lastNameErrorText: ''
+        });
+      }
+    }
+    else if(id === 'email') {
+      this.setState({
+        emailFieldValue: event.target.value,
+      });
+      if(event.target.value === '') {
+        this.setState({
+          emailErrorText: 'Field cannot be empty'
+        });
+      }
+      else {
+        this.setState({
+          emailErrorText: ''
+        });
+      }
+    }
+  },
 	_createNewUser: function() {
+    var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if(!reg.test(this.state.emailFieldValue)) {
+      this.setState({emailErrorText: 'Email format should be "john@doe.com"'});
+      return;
+    }
 		var data = {
 			firstName: this.refs.firstName.getValue(),
 			lastName: this.refs.lastName.getValue(),
 			email: this.refs.email.getValue(),
 			password: "123456",
 		};
+    var that = this;
 		fetch('http://localhost:1337/api/users', {
-			method: 'POST', 
+			method: 'POST',
 			body: JSON.stringify(data),
 			headers: {
-				'Authorization': 'Bearer ' + localStorage.token, 
+				'Authorization': 'Bearer ' + localStorage.token,
 				'content-type': 'application/json'
 			}
 		})
@@ -40,58 +94,58 @@ var CreateNewAccountForm = React.createClass({
 	        return response.json();
 		})
 		.then(result => {
-			if (result.statusCode !== 200 && result.statusCode) {
-				console.log('code', result.statusCode)
-				var err;
-				try {
-					err = JSON.parse(result.message);
-				}
-				catch(e) {
-					err  = {message: "Unknown error, please try again later"};
-				}
-
-				this.setState({
-					error: err.message
-				});
-			}
-			else {
-				browserHistory.push('/accounts');
-			}
+      if(result.message === "ERROR"){
+        that.setState({
+          formErrorMessage: "There was an error, please check your input, email might already exist."
+        })
+        return;
+      }
+      else {
+        browserHistory.push('/accounts');
+      }
 		})
 	},
 	render: function() {
+    var emptyInputs = !(this.state.firstNameFieldValue && this.state.lastNameFieldValue && this.state.emailFieldValue);
 		return (
 				<div style={style}>
 			    	<h2>Create a New Employee Account</h2>
 				 	<TextField
-				 		ref="firstName"
-				        hintText="First Name"
-				        floatingLabelText="First Name"
-				        type="text"
-				    /><br />
-				     <TextField
-				    	ref="lastName"
-				      	hintText="Last Name"
-				      	floatingLabelText="Last Name"
-				      	type="text"
-				    /><br />
+            ref="firstName"
+            hintText="Your First Name"
+            floatingLabelText="First Name"
+            type="text"
+            errorText={this.state.firstNameErrorText}
+            onChange={this.onChange.bind(this, 'first_name')}
+				  /><br />
+				  <TextField
+             ref="lastName"
+             hintText="Your Last Name"
+             floatingLabelText="Last Name"
+             type="text"
+             errorText={this.state.lastNameErrorText}
+             onChange={this.onChange.bind(this, 'last_name')}
+				  /><br />
 					<TextField
-						ref="email"
-				        hintText="Email Address"
-				        floatingLabelText="Email Address"
-				        type="text"
-				    /><br />
+            ref="email"
+            hintText="Email Address"
+            floatingLabelText="Email Address"
+            type="text"
+            errorText={this.state.emailErrorText}
+            onChange={this.onChange.bind(this, 'email')}
+				  /><br />
 				    {
 				    	this.state.error ? <span style={{color: '#D32F2F'}} className="error">{this.state.error}</span> : null
 				    }
 				    <br />
-				    <FlatButton 
+				    <FlatButton
 				    	onClick={this._createNewUser}
-				    	backgroundColor='#40C4FF' 
-				    	label="Create" 
+				    	backgroundColor={emptyInputs ? '#E0E0E0':'#40C4FF'}
+				    	label="Create"
 				    	primary={true}
-				    	style={{color: '#E1F5FE', marginTop: '12px'}}
+				    	style={{color: emptyInputs ? '#BDBDBD':'#E1F5FE', marginTop: '12px'}}
  					/>
+          <p style={{color:'red'}}>{this.state.formErrorMessage}</p>
 				</div>
 		);
 	}

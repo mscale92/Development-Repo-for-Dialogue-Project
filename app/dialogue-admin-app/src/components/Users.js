@@ -8,7 +8,6 @@ import Dialog from 'material-ui/Dialog';
 import CircularProgress from 'material-ui/CircularProgress';
 import Toggle from 'material-ui/Toggle';
 import FontIcon from 'material-ui/FontIcon';
-import EditUserForm from './EditUserForm';
 import TextField from 'material-ui/TextField';
 
 require('es6-promise').polyfill();
@@ -38,6 +37,16 @@ var Users = React.createClass({
 			users: "",
 		}
 	},
+
+	onChange: function(id, event) {
+		if(id === 'email') {
+			this.setState({
+				emailFieldValue: event.target.value,
+				emailErrorText: ''
+			});
+		}
+	},
+
 	handleClose: function(){
 		this.setState({
 			userToDelete: false,
@@ -75,7 +84,12 @@ var Users = React.createClass({
 		});
 	},
 	_editUser: function(userToEditId) {
-		var that = this;
+		var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if(!reg.test(this.state.emailFieldValue)) {
+			this.setState({emailErrorText: 'Email format should be "john@doe.com"'});
+			return;
+		}
+
 		// Give the users the option to enter only desired fields by testing for empty values
 
 		//Format the empty object for the server
@@ -83,7 +97,7 @@ var Users = React.createClass({
 			user_metadata: {}
 		};
 
-		// Set some variables from the form values for ternary simplicity later 
+		// Set some variables from the form values for ternary simplicity later
 		var firstName = this.refs.updatedFirstName.getValue()
 		var lastName = this.refs.updatedLastName.getValue()
 		var email = this.refs.updatedEmail.getValue()
@@ -92,7 +106,7 @@ var Users = React.createClass({
 		// If both first and last name are missing, delete the user_metadata
 			// not doing this overrides all user_metadata on auth0
 		firstName.length === 0 && lastName.length === 0 ? delete currentUserInfo.user_metadata : null;
-		
+
 
 		//If the field is empty, just null. Otherwise, add it to the object
 		firstName.length !== 0 ? currentUserInfo.user_metadata.firstName = firstName : null;
@@ -100,26 +114,31 @@ var Users = React.createClass({
 		email.length !== 0 ? currentUserInfo.email = email : null;
 		password.length !== 0 ? currentUserInfo.password = password : null;
 
+		var that = this;
 		//Send the fetch Patch request
 		fetch('http://localhost:1337/api/users/' + userToEditId, {
-			method: 'PATCH', 
+			method: 'PATCH',
 			body: JSON.stringify(currentUserInfo),
 			headers: {'Authorization': 'Bearer ' + localStorage.token, 'content-type': 'application/json'}
 		})
 			.then(function(response) {
-				
-		       	if (response.status >= 400) {
-	            	throw new Error("Bad response from server");
-		        	}
 		        return response.json();
 		    })
-			.then(response => {
-				return this._refreshData()
+			.then(result => {
+				if(result.message === "ERROR"){
+					that.setState({
+						formErrorMessage: "There was an error, please check your input, email might already exist."
+					})
+					return;
+				}
+				else {
+					return that._refreshData()
+				}
 			});
 
 	},
 	_refreshData: function(){
-		// Due to a delay in auth0 when sending a PATCH, we must do two gets back to back 
+		// Due to a delay in auth0 when sending a PATCH, we must do two gets back to back
 		//in order to retreive the updated user data
 		fetch('http://localhost:1337/api/users', {
 			method: 'GET',
@@ -157,8 +176,8 @@ var Users = React.createClass({
 		return (
 				<TableRow key={user.user_id}>
 					<TableHeaderColumn>
-						<FlatButton 
-							onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})} 
+						<FlatButton
+							onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})}
 							icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}>
 						</FlatButton>
 					</TableHeaderColumn>
@@ -267,6 +286,8 @@ var Users = React.createClass({
 					      hintText="Updated Email Address"
 					      floatingLabelText="Updated Email Address"
 					      type="text"
+								errorText={this.state.emailErrorText}
+								onChange={this.onChange.bind(this, 'email')}
 					    /><br />
 					    <TextField
 					      ref="updatedPass"
@@ -282,6 +303,7 @@ var Users = React.createClass({
 				    	primary={true}
 				    	style={{color: '#E1F5FE', margin: '12px'}}
 				    />
+						<p style={{color:'red'}}>{this.state.formErrorMessage}</p>
 					</div>
 				</div>
 				</Dialog>
