@@ -1,11 +1,12 @@
 var stripe = require('stripe')(process.env.STRIPE_SK_TEST);
 
+// Export the module as an object of functions
 module.exports = {
-  //Returns the customer's current plan data, as well as the quantity suscribed as JSON
+  // The getAll function retreives all of the plans currently available on stripe
   getAll: function(){
     return stripe.plans.list();
   },
-  //Gets the company's current plan
+  // The getCurrent function retreives the current plan on which the admin user is registered
   getCurrent: function(customerId){
     return stripe.customers.retrieve(customerId)
       .then(customer => {
@@ -14,10 +15,10 @@ module.exports = {
             plan: customer.subscriptions.data[0].plan,
             subscriptionQuantity: customer.subscriptions.data[0].quantity,
           }
-        )
+        );
       });
   },
-  //Updates the customer's current plan, returns the new subscription as JSON
+  // The updateCurrent function updates the admin user's plan to a different plan, the new plan is the newPlanId
   updateCurrent: function(customerId, newPlanId){
     return stripe.customers.retrieve(customerId)
       .then(customer => {
@@ -32,4 +33,4 @@ module.exports = {
         return subscription;
       });
   }
-}
+};
