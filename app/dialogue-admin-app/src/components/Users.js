@@ -42,11 +42,11 @@ var Users = React.createClass({
 		if(id === 'email') {
 			this.setState({
 				emailFieldValue: event.target.value,
-				emailErrorText: ''
+				// emailErrorText: ''
 			});
 		}
 	},
-
+	// handleClose is used to set state values to false in order to close dialogs
 	handleClose: function(){
 		this.setState({
 			userToDelete: false,
@@ -55,6 +55,7 @@ var Users = React.createClass({
 			userToEditId: false,
 		});
 	},
+	// _handleDelete is used to make an AJAX call to delete a user
 	_handleDelete: function(userToDelete){
 
 		fetch(`http://localhost:1337/api/users/`+ userToDelete, {
@@ -83,15 +84,9 @@ var Users = React.createClass({
 			});
 		});
 	},
+	// _editUser is used to make an AJAX call to edit user information
 	_editUser: function(userToEditId) {
-		var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-		if(!reg.test(this.state.emailFieldValue)) {
-			this.setState({emailErrorText: 'Email format should be "john@doe.com"'});
-			return;
-		}
-
 		// Give the users the option to enter only desired fields by testing for empty values
-
 		//Format the empty object for the server
 		var currentUserInfo = {
 			user_metadata: {}
@@ -114,6 +109,14 @@ var Users = React.createClass({
 		email.length !== 0 ? currentUserInfo.email = email : null;
 		password.length !== 0 ? currentUserInfo.password = password : null;
 
+		// Test to see if the email is formatted correctly, only if email has a string present set the error text
+		var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if(!reg.test(this.state.emailFieldValue) && email.length > 0) {
+			this.setState({emailErrorText: 'Email format should be "john@doe.com"'});
+			return;
+		}
+
+		// this becomes that due to function scope
 		var that = this;
 		//Send the fetch Patch request
 		fetch('http://localhost:1337/api/users/' + userToEditId, {
@@ -172,10 +175,13 @@ var Users = React.createClass({
 			});
 
 	},
+	// renderData is used to render a list of employees
+		// It it used in the map function on line 266 within the TableBody tag
 	renderData: function(user) {
 		return (
 				<TableRow key={user.user_id}>
 					<TableHeaderColumn>
+						{/*Edit User button*/}
 						<FlatButton
 							onClick={() => this.setState({userToEdit: true, userToEditId: user.user_id})}
 							icon={<FontIcon style={style.iconStyle} className="material-icons">{user.app_metadata.roles.indexOf('admin')<0 ? "create" : "face"}</FontIcon>}>
@@ -185,6 +191,7 @@ var Users = React.createClass({
 					<TableRowColumn>{user.user_metadata.lastName}</TableRowColumn>
 					<TableRowColumn>{user.email}</TableRowColumn>
 					<TableRowColumn>
+						{/*Delete button*/}
 						<RaisedButton
 							onTouchTap={()=>this.setState({userToDelete: user.user_metadata.firstName, userToDeleteId: user.user_id})}
 							label="Delete"
@@ -196,6 +203,7 @@ var Users = React.createClass({
 		)
 	},
 	componentDidMount: function() {
+		// Grab all the user information for the company
 		fetch('http://localhost:1337/api/users', {
 			method: 'GET',
 			headers: {'Authorization': 'Bearer ' + localStorage.token}
@@ -211,6 +219,9 @@ var Users = React.createClass({
 		})
 	},
 	render: function() {
+		// When the page first loads, none of the states are set, this happens on componentDidMount
+		// So, render a circular progress, swirl animation, to show the page loading to user
+		//Once the component mounts, return the account information.
 		if (this.state.users === '') {
 			return (
 				<div style={style.main}>
@@ -219,8 +230,12 @@ var Users = React.createClass({
 			)
 		}
 
+		// Make a user variable for simplicity
 		var users = this.state.users;
 
+		// actionButtons are used in the delete dialog
+			// cancel annules the operation
+			// delete erases the selected user
 		const actionsButtons = [
 			<FlatButton
 		    label="Cancel"
@@ -233,6 +248,8 @@ var Users = React.createClass({
 		    onClick={() => this._handleDelete(this.state.userToDeleteId)}
 		  />,
 		];
+
+		// Return our mounted component once this.state.users has a value
 	    return (
 	      <div>
 			    <h2>Accounts</h2>
@@ -251,6 +268,8 @@ var Users = React.createClass({
 				    	{users.map(this.renderData)}
 				    </TableBody>
 		   	</Table>
+		   		{/*Delete dialog that appears after pressing the delete button
+		   			Used to delete a user except for the admin*/}
 				<Dialog
 		          	actions={actionsButtons}
 		          	modal={false}
@@ -259,6 +278,8 @@ var Users = React.createClass({
 			        >
 			          Wait...Are you sure you want to delete {this.state.userToDelete}?
 		        </Dialog>
+		        {/*User to edit dialog
+		        	Used to edit user information; email, password, firstname, and lastname*/}
 				<Dialog
 				    autoScrollBodyContent={true}
 					modal={false}
@@ -267,6 +288,7 @@ var Users = React.createClass({
 					>
 					<div style={editUserDialogStyle}>
 					<div>
+						{/*The edit employee form*/}
 						<h3>Edit employee information</h3>
 						<div>
 					    <TextField
@@ -296,6 +318,7 @@ var Users = React.createClass({
 					      type="password"
 					    /><br />
 				    </div>
+				    {/*Flatbutton to submit the edit user/employee form*/}
 				    <FlatButton
 				    	onClick={() => this._editUser(this.state.userToEditId)}
 				    	backgroundColor='#40C4FF'

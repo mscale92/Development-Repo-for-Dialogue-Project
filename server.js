@@ -307,6 +307,7 @@ app.post('/api/users', function(req, res) {
 
   users.createUser(customerId, email, password, firstName, lastName)
   .then(updatedSub =>{
+    console.log(updatedSub, "pineapple")
     res.json(updatedSub);
   })
   .catch(function (error) {
