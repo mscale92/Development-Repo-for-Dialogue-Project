@@ -144,6 +144,7 @@ var Users = React.createClass({
 				return response3.json();
 			})
 			.then(response4 =>{
+				console.log(response4)
 				this.setState({
 					userToEdit: false,
 					userToEditId: false,

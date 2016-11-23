@@ -11,7 +11,7 @@ const main = {
 	justifyContent: 'center',
 	backgroundColor: '#E1F5FE',
 	alignItems: 'center',
-    height: '100vh',
+  height: '100vh',
 	fontFamily: 'Roboto, sans-serif',
 	textAlign: 'center',
 }
@@ -22,17 +22,39 @@ const buttonStyle = {
 	alignItems: 'center',
 }
 
+
 var LogInForm = React.createClass({
 	getInitialState: function () {
 		return {}
 	},
+
+	onChange: function(id, event) {
+		if(id === 'email') {
+			this.setState({
+				emailFieldValue: event.target.value,
+				emailErrorText: ''
+			});
+		}
+		else if (id === 'password') {
+			this.setState({
+				passwordFieldValue: event.target.value
+			});
+		}
+	},
+
 	_loginUser: function() {
+		var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if(!reg.test(this.state.emailFieldValue)) {
+			this.setState({emailErrorText: 'Email format must be: something@something.something'});
+			return;
+		}
+
 		var data = {
 			email: this.refs.email.getValue(),
 			password: this.refs.password.getValue()
 		};
 		fetch('http://localhost:1337/api/login', {
-			method: 'POST', 
+			method: 'POST',
 			body: JSON.stringify(data),
 			headers: {'content-type': 'application/json'}
 		})
@@ -57,6 +79,7 @@ var LogInForm = React.createClass({
 		})
 	},
 	render: function() {
+		var emptyInputs = !(this.state.emailFieldValue && this.state.passwordFieldValue);
 		return (
 				<div style={main}>
 					<div>
@@ -67,16 +90,20 @@ var LogInForm = React.createClass({
 						<div>
 							<TextField
 								ref="email"
-						    	hintText="Email Address"
-						    	floatingLabelText="Email Address"
-						    	type="text"
-						    /><br />
-						    <TextField
-						    	ref="password"
-							    hintText="Password"
-							    floatingLabelText="Password"
-							    type="password"
-						    /><br />
+						    hintText="Email Address"
+					    	floatingLabelText="Email Address"
+					    	type="text"
+								errorText={this.state.emailErrorText}
+								onChange={this.onChange.bind(this, 'email')}
+						  /><br />
+					    <TextField
+					    	ref="password"
+						    hintText="Password"
+						    floatingLabelText="Password"
+						    type="password"
+								errorText={this.state.passwordErrorText}
+								onChange={this.onChange.bind(this, 'password')}
+					    /><br />
 					    </div>
 					    <div>
 					    	{
@@ -84,19 +111,20 @@ var LogInForm = React.createClass({
 				    		}
 					    </div>
 					    <div style={buttonStyle}>
-						    <FlatButton 
+						    <FlatButton
 						    	onClick={this._loginUser}
-						    	backgroundColor='#40C4FF' 
-						    	label="Log in" 
+						    	backgroundColor={emptyInputs ? '#E0E0E0':'#40C4FF'}
+						    	label="Log in"
 						    	primary={true}
-						    	style={{color: '#E1F5FE', margin: '12px'}} 
+						    	style={{color: emptyInputs ? '#BDBDBD':'#E1F5FE', margin: '12px'}}
+									disabled={emptyInputs}
 						    /><br />
 						    <FlatButton
 						    	href="/"
-						    	backgroundColor='#40C4FF' 
+						    	backgroundColor='#40C4FF'
 						    	label="Go back"
 						    	primary={true}
-						    	style={{color: '#E1F5FE', margin: '12px'}} 
+						    	style={{color: '#E1F5FE', margin: '12px'}}
 						    />
 					    </div>
 				    </div>

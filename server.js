@@ -30,8 +30,7 @@ app.use(
   function(error, req, res, next) {
   // an error handling callback
   if(error){
-    console.log(error, "not logged in!");
-    res.status(401).send("Unauthorized!");
+    res.status(401).json({status: 401, message: "ERROR", sub: error, });
   }
 });
 
@@ -64,7 +63,7 @@ app.post('/api/signup', function(req, res){
   .then(function (user) {
     if(user.length > 0){
       // throw new Error("User already exists.");
-      res.status(401).send("User already exists.")
+      res.status(401).json({status: 401, message: "ERROR", sub: "User already exists!!", });
     }
     //Else, the user does not exist
     //Clear to go ahead and create a new customer on Stripe!
@@ -123,7 +122,7 @@ app.post('/api/signup', function(req, res){
   })
   .catch(function (error) {
     // Handle error.
-    res.status(500).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 
   /*
@@ -159,7 +158,7 @@ app.post('/api/login', function(req, res){
     if(user[0].app_metadata.roles.indexOf("admin") < 0){
       // eventually send something to the app that tells the user that it's admins only
       //not just a console error
-      res.status(401).send("Admins only");
+      res.status(401).json({status: 401, message: "ERROR", sub: "Admins only!", });
     }
     else{
       return authentication0.oauth.signIn({
@@ -175,7 +174,7 @@ app.post('/api/login', function(req, res){
     res.json(jwtObject.id_token);
   })
   .catch(error => {
-    res.status(401).send(error);
+   res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 
 });
@@ -204,7 +203,7 @@ app.get('/api/company', function(req, res) {
       res.json(companyInfo);
     })
     .catch(function (error) {
-      res.status(401).send(error);
+      res.status(500).json({status: 500, message: "ERROR", sub: error, });
     });
 
 
@@ -237,7 +236,7 @@ app.patch('/api/company', function(req, res) {
     res.json(updatedCompanyInfo);
   })
   .catch(function (error) {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 
 })
@@ -266,7 +265,7 @@ app.get('/api/users', function(req, res){
     res.json(users);
   })
   .catch(function (error) {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 });
 
@@ -278,7 +277,7 @@ app.get('/api/users/:userId', function(req, res){
     res.json(user);
   })
   .catch(error => {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 });
 
@@ -311,7 +310,7 @@ app.post('/api/users', function(req, res) {
     res.json(updatedSub);
   })
   .catch(function (error) {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
 
 
@@ -327,7 +326,7 @@ app.patch('/api/users/:userId', function(req, res) {
     res.json(updatedUser);
   })
   .catch(function (error) {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
   
 });
@@ -340,7 +339,7 @@ app.delete('/api/users/:userId', function(req, res) {
     res.json(updatedSub);
   })
   .catch(function (error) {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   });
   /*
   This endpoint is "protected" by express-jwt. This middleware will add a req.user object with all the info from the user. It will lok a bit like this:
@@ -380,8 +379,8 @@ app.get('/api/plans', function(req, res){
     res.json(plans);
   })
   .catch(error => {
-    res.status(401).send(error);
-  })
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
+  });
 });
 
 app.get('/api/currentplan', function(req, res) {
@@ -407,7 +406,7 @@ app.get('/api/currentplan', function(req, res) {
     res.json(currentPlan);
   })
   .catch(error => {
-    res.status(401).send(error);
+    res.status(500).json({status: 500, message: "ERROR", sub: error, });
   })
 });
 
@@ -439,7 +438,7 @@ app.put('/api/currentplan', function(req, res) {
       res.json(updatedPlan);
     })
     .catch(error => {
-      res.status(401).send(error);
+      res.status(500).json({status: 500, message: "ERROR", sub: error, });
     });
 });
 
@@ -477,7 +476,7 @@ app.get('/api/creditcard', function(req, res) {
       }
     })
     .catch(error => {
-      res.status(401).send(error);
+      res.status(500).json({status: 500, message: "ERROR", sub: error, });
     });
 });
 
@@ -520,7 +519,7 @@ app.post('/api/creditcard', function(req, res) {
       res.json(finalCreditCardData);
     })
     .catch(error => {
-      res.status(401).send(error);
+      res.status(500).json({status: 500, message: "ERROR", sub: error, });
     });
 });
 
